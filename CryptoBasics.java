@@ -33,7 +33,7 @@ public class CryptoBasics {
         return decoder.decode(base64String);
     }
 
-    public static void Testing(){
+    public static void testingWithoutSalt(){
         String password = "RajatKandpal";
         String hash1 = toBase64(sha256(password));
         String hash2 = toBase64(sha256(password));
@@ -41,8 +41,27 @@ public class CryptoBasics {
         System.out.println(hash1 + "  ||||  " + hash2);
     }
 
+    public static void testingWithSalt(){
+        String password = "RajatKandpal";
+        String salt1 = toBase64(generateRandomBytes(5));
+        String salt2 = toBase64(generateRandomBytes(5));
+        System.out.println(toBase64(sha256(password + salt1)));
+        System.out.println(toBase64(sha256(password + salt2)));
+    }
+
+    public static void measuringHashingSpeed(){
+        long attempts = 100_000;
+        long currTime = System.currentTimeMillis();
+
+        String password = "RajatKandpal";
+        for(int i = 0; i<attempts; i++){
+            sha256(password);
+        }
+
+        System.out.println(System.currentTimeMillis() - currTime);
+    }
 
     public static void main(String[] args) {
-        Testing();
+
     }
 }
