@@ -16,7 +16,7 @@ public class CryptoBasics {
     public static byte[] sha256(String input){
         try{
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+            byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8); //converts string into byte (digest happens only in bytes)
             byte[] hashBytes = md.digest(inputBytes);
             return hashBytes;
         } catch (NoSuchAlgorithmException e) {
@@ -41,15 +41,34 @@ public class CryptoBasics {
         System.out.println(hash1 + "  ||||  " + hash2);
     }
 
-    public static void testingWithSalt(){
-        String password = "RajatKandpal";
-        String salt1 = toBase64(generateRandomBytes(5));
-        String salt2 = toBase64(generateRandomBytes(5));
-        System.out.println(toBase64(sha256(password + salt1)));
-        System.out.println(toBase64(sha256(password + salt2)));
+    public static void testingWithSalt() {
+        try {
+            String password = "RajatKandpal";
+
+            byte[] salt1 = generateRandomBytes(16);
+            byte[] salt2 = generateRandomBytes(16);
+
+            // First hash
+            MessageDigest md1 = MessageDigest.getInstance("SHA-256");
+            md1.update(password.getBytes(StandardCharsets.UTF_8)); //md has a buffer, first password byte is added
+            md1.update(salt1);// then salt byte
+            byte[] hash1 = md1.digest();
+
+            // Second hash
+            MessageDigest md2 = MessageDigest.getInstance("SHA-256");
+            md2.update(password.getBytes(StandardCharsets.UTF_8));
+            md2.update(salt2);
+            byte[] hash2 = md2.digest();
+
+            System.out.println(toBase64(hash1));
+            System.out.println(toBase64(hash2));
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static void measuringHashingSpeed(){
+        public static void measuringHashingSpeed(){
         long attempts = 100_000;
         long currTime = System.currentTimeMillis();
 
@@ -62,6 +81,6 @@ public class CryptoBasics {
     }
 
     public static void main(String[] args) {
-
+        testingWithSalt();
     }
 }
