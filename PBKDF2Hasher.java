@@ -11,7 +11,7 @@ public class PBKDF2Hasher {
     private static final int SALT_LENGTH = 16;
     private static final int HASH_LENGTH = 32;
 
-    public static PasswordHashResult hashPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static PasswordHashResult hashPassword(String password){
 
         try {
             byte[] salt = CryptoBasics.generateRandomBytes(SALT_LENGTH);
@@ -42,6 +42,13 @@ public class PBKDF2Hasher {
             Arrays.fill(chars,'\0');
         }
     }
+
+    public static PasswordHashResult hashPassword(String password, int iterations, int saltLength,int hashLength) {
+        byte[] salt = CryptoBasics.generateRandomBytes(saltLength);
+        byte[] hash = hashPassword(password, salt, iterations);
+        return new PasswordHashResult(salt, hash, iterations);
+    }
+
 
     public static boolean verifyPassword(String password, PasswordHashResult storedResult){
         byte[] computed = hashPassword(password, storedResult.getSalt(), storedResult.getIterations());
