@@ -6,6 +6,9 @@ public class PasswordHashResult {
     private final int iterations;
 
     public PasswordHashResult(byte[] salt, byte[] hash, int iterations) {
+        ValidationUtils.validateSalt(salt);
+        ValidationUtils.validateHash(hash);
+        ValidationUtils.validateIterations(iterations);
         this.salt = salt;
         this.hash = hash;
         this.iterations = iterations;

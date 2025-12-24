@@ -31,6 +31,9 @@ public class PBKDF2Hasher {
     //but default hash_length
 
     public static byte[] hashPassword(String password, byte[] salt , int iterations){
+        ValidationUtils.validatePassword(password);
+        ValidationUtils.validateSalt(salt);
+        ValidationUtils.validateIterations(iterations);
         char[] chars = password.toCharArray();
         try{
             PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, HASH_LENGTH * 8);

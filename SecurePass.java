@@ -4,11 +4,14 @@ public class SecurePass {
     }
     // simple hashing api
     public static PasswordHashResult hash(String password){
+        ValidationUtils.validatePassword(password);
         return PBKDF2Hasher.hashPassword(password);
     }
 
     //verify
     public static boolean verify(String password, PasswordHashResult stored){
+        ValidationUtils.validatePassword(password);
+        ValidationUtils.validateHashResult(stored);
         return PBKDF2Hasher.verifyPassword(password,stored);
     }
 
