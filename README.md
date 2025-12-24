@@ -39,9 +39,13 @@ Adding Maven or Gradle is recommended for testing and dependency management.
 
 PBKDF2 Hasher:
 String password = "S3cur3P@ssw0rd!";
+
 PBKDF2Hasher hasher = new PBKDF2Hasher();
+
 PasswordHashResult result = hasher.hashPassword(password);
+
 String stored = result.toEncodedString();
+
 boolean verified = hasher.verifyPassword(password, stored);
 
 SecurePass Builder:
@@ -50,7 +54,11 @@ SecurePass securePass = new SecurePassBuilder()
     .withSaltLength(16)
     .withAlgorithm("PBKDF2WithHmacSHA256")
     .build();
+
+    
 String hash = securePass.hash("password123");
+
+
 boolean matches = securePass.verify("password123", hash);
 
 ## 🔐 Security Notes
