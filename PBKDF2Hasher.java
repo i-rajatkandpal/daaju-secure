@@ -28,6 +28,7 @@ public class PBKDF2Hasher {
     }
 
     // with specific salt and iterations
+    //but default hash_length
 
     public static byte[] hashPassword(String password, byte[] salt , int iterations){
         char[] chars = password.toCharArray();
@@ -43,15 +44,37 @@ public class PBKDF2Hasher {
         }
     }
 
+    //with specific salt and iteration
+    //but with custom hash_length
+
+    public static byte[] hashPassword(String password, byte[] salt, int iterations, int hashLength) {
+        char[] chars = password.toCharArray();
+        try {
+            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, hashLength * 8);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
+            return skf.generateSecret(spec).getEncoded();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        } finally {
+            Arrays.fill(chars, '\0');
+        }
+    }
+
     public static PasswordHashResult hashPassword(String password, int iterations, int saltLength,int hashLength) {
         byte[] salt = CryptoBasics.generateRandomBytes(saltLength);
-        byte[] hash = hashPassword(password, salt, iterations);
+        byte[] hash = hashPassword(password, salt, iterations, hashLength);
         return new PasswordHashResult(salt, hash, iterations);
     }
 
 
     public static boolean verifyPassword(String password, PasswordHashResult storedResult){
-        byte[] computed = hashPassword(password, storedResult.getSalt(), storedResult.getIterations());
+        byte[] computed;
+        if(storedResult.getHash().length == HASH_LENGTH){
+            computed = hashPassword(password, storedResult.getSalt(), storedResult.getIterations());
+        }
+        else{
+            computed = hashPassword(password, storedResult.getSalt(), storedResult.getIterations(), storedResult.getHash().length);
+        }
         boolean matched = constantTimeComparison(computed,storedResult.getHash());
         Arrays.fill(computed,(byte) 0);
         return matched;
