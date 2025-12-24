@@ -9,22 +9,23 @@ public class PasswordHashResult {
         ValidationUtils.validateSalt(salt);
         ValidationUtils.validateHash(hash);
         ValidationUtils.validateIterations(iterations);
-        this.salt = salt;
-        this.hash = hash;
+        this.salt = salt.clone();  // Defensive copy
+        this.hash = hash.clone();  // Defensive copy
         this.iterations = iterations;
     }
 
     public byte[] getSalt() {
-        return salt;
+        return salt.clone();  // Defensive copy
     }
 
     public byte[] getHash() {
-        return hash;
+        return hash.clone();  // Defensive copy
     }
 
     public int getIterations() {
         return iterations;
     }
+
     @Override
     public String toString() {
         String saltB64 = Base64.getEncoder().encodeToString(this.salt);

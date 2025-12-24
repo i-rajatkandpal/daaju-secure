@@ -3,7 +3,6 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
-import java.util.Base64;
 
 public class PBKDF2Hasher {
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
@@ -12,7 +11,7 @@ public class PBKDF2Hasher {
     private static final int HASH_LENGTH = 32;
 
     public static PasswordHashResult hashPassword(String password){
-
+        ValidationUtils.validatePassword(password);
         try {
             byte[] salt = CryptoBasics.generateRandomBytes(SALT_LENGTH);
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, HASH_LENGTH * 8);
@@ -35,8 +34,9 @@ public class PBKDF2Hasher {
         ValidationUtils.validateSalt(salt);
         ValidationUtils.validateIterations(iterations);
         char[] chars = password.toCharArray();
+        PBEKeySpec spec = null;
         try{
-            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, HASH_LENGTH * 8);
+            spec = new PBEKeySpec(chars, salt, iterations, HASH_LENGTH * 8);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
             return skf.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -44,6 +44,9 @@ public class PBKDF2Hasher {
         }
         finally{
             Arrays.fill(chars,'\0');
+            if (spec != null) {
+                spec.clearPassword();
+            }
         }
     }
 
@@ -51,19 +54,31 @@ public class PBKDF2Hasher {
     //but with custom hash_length
 
     public static byte[] hashPassword(String password, byte[] salt, int iterations, int hashLength) {
+        ValidationUtils.validatePassword(password);
+        ValidationUtils.validateSalt(salt);
+        ValidationUtils.validateIterations(iterations);
+        ValidationUtils.validateHashLength(hashLength);
         char[] chars = password.toCharArray();
+        PBEKeySpec spec = null;
         try {
-            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, hashLength * 8);
+            spec = new PBEKeySpec(chars, salt, iterations, hashLength * 8);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
             return skf.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         } finally {
             Arrays.fill(chars, '\0');
+            if (spec != null) {
+                spec.clearPassword();
+            }
         }
     }
 
     public static PasswordHashResult hashPassword(String password, int iterations, int saltLength,int hashLength) {
+        ValidationUtils.validatePassword(password);
+        ValidationUtils.validateIterations(iterations);
+        ValidationUtils.validateSaltLength(saltLength);
+        ValidationUtils.validateHashLength(hashLength);
         byte[] salt = CryptoBasics.generateRandomBytes(saltLength);
         byte[] hash = hashPassword(password, salt, iterations, hashLength);
         return new PasswordHashResult(salt, hash, iterations);
@@ -71,6 +86,8 @@ public class PBKDF2Hasher {
 
 
     public static boolean verifyPassword(String password, PasswordHashResult storedResult){
+        ValidationUtils.validatePassword(password);
+        ValidationUtils.validateHashResult(storedResult);
         byte[] computed;
         if(storedResult.getHash().length == HASH_LENGTH){
             computed = hashPassword(password, storedResult.getSalt(), storedResult.getIterations());
